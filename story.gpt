@@ -1,0 +1,3 @@
+1. Browse to ${url} and read the page contents.
+2. Create a tldr text version of it for an instagram reel or a tiktok video. No emojis. Max 100 words.
+3. Split the created text into 3 parts, and save it to "{dir}/story-${INDEX}.txt"
