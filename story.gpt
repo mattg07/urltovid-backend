@@ -1,3 +1,13 @@
-1. Browse to ${url} and read the page contents.
-2. Create a tldr text version of it for an instagram reel or a tiktok video. No emojis. Max 100 words.
-3. Split the created text into 3 parts, and save it to "{dir}/story-${INDEX}.txt"
+tools: sys.write, sys.read, sys.download, sys.find
+tools: github.com/gptscript-ai/browser
+tools: github.com/nw0rn/text2speech-gptscript
+tools: github.com/dejwid/speech2text-gptscript
+args: url: Link to the article or blog page
+args: dir: Directory to save the file
+globalmodel: gpt-4o-mini
+1. Do these task starting in an ascending way. 
+2. Browse to ${url} and read the page contents.
+3. Create a tldr text version of it for an Instagram reel or a TikTok video. No emojis. Max 100 words.
+4. Split the created text into 3 parts, save the texts to "${dir}/story-${INDEX}.txt"
+5. For each text part, generate speech files and save them to: "${dir}/voiceover-${INDEX}". Don't pass the file type, use the default value.
+6. Run speech2text for all 3 *.mp3 files inside ${dir} and save results to 3 separate files in ${dir}.
