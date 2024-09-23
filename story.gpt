@@ -2,6 +2,7 @@ tools: sys.write, sys.read, sys.download, sys.find
 tools: github.com/gptscript-ai/browser
 tools: github.com/nw0rn/text2speech-gptscript
 tools: github.com/dejwid/speech2text-gptscript
+tools: ./dalle-image-generation/tool.gpt
 args: url: Link to the article or blog page
 args: dir: Directory to save the file
 globalmodel: gpt-4o-mini
@@ -10,4 +11,3 @@ globalmodel: gpt-4o-mini
 3. Create a tldr text version of it for an Instagram reel or a TikTok video. No emojis. Max 100 words.
 4. Split the created text into 3 parts, save the texts to "${dir}/story-${INDEX}.txt"
 5. For each text part, generate speech files and save them to: "${dir}/voiceover-${INDEX}". Don't pass the file type, use the default value.
-6. Run speech2text for all 3 *.mp3 files inside ${dir} and save results to 3 separate files in ${dir}.
