@@ -1,14 +1,14 @@
 tools: sys.write, sys.read, sys.download, sys.find
 tools: github.com/gptscript-ai/browser
-tools: github.com/dejwid/speech2text-gptscript
 tools: ./dalle-image-generation/tool.gpt
 tools: ./text2speech/tool.gpt
+tools: ./speech2text/tool.gpt
 args: url: Link to the article or blog page
 args: dir: Directory to save the file
 globalmodel: gpt-4o-mini
 1. Do these task starting in an ascending way. 
 2. Browse to ${url} and read the page contents.
-3. Create a tldr text version of it for an Instagram reel or a TikTok video. No emojis. Max 100 words.
-4. Split the created text into 3 parts, save the texts to "${dir}/story-${INDEX}.txt"
-5. For each text part, come up with a keyword or a phrase for a 1024x1792 b-roll image, generate and download them to: "${dir}/b-roll-${INDEX}.png"
-6. For each text part, generate speech files and save them to: "${dir}/voiceover-${INDEX}". Don't pass the file type, use the default value.
+3. Create a tldr text version of it for an Instagram reel or a TikTok video. No emojis. Max 250 words. Save the text to {dir}
+4. Based on the tldr, come up with 3 keyword or a phrase for 3 1024x1792 b-roll images, better if the images are animation-like, generate and download save them to: "${dir}/b-roll-${INDEX}.png"
+5. For the tldr text, generate a speech file and save it to: "${dir}/voiceover-${INDEX}". Don't pass the file type, use the default value.
+6. Run speech2text for the *.mp3 file inside "${dir}" and save result to ${dir}.

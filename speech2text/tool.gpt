@@ -1,0 +1,60 @@
+Name: speech2text
+Description: Convert speech to text.
+Args: AUDIO_FILE: (required) Audio file to be converted
+Args: MODEL: (optional) The name of the model to use. Default is "whisper-1".
+Args: RESPONSE_FORMAT: (optional) The format of the response. Default is "json".
+Args: OUTPUT_FILE: (optional) The path to save the output file. Default is "translation".
+
+#!/bin/bash
+
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+else
+    echo ".env file not found. Please create a .env file with the necessary environment variables."
+    exit 1
+fi
+
+audioFileArg=${AUDIO_FILE:-""}
+modelArg=${MODEL:-"whisper-1"}
+responseFormatArg=${RESPONSE_FORMAT:-"srt"}
+outputFileArg=${OUTPUT_FILE:-"transcription"}
+
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo "OPENAI_API_KEY is not set. Unable to create a transcription. Please set the OPENAI_API_KEY as an environment variable."
+    exit 1
+fi
+
+if [ -z "$audioFileArg" ]; then
+    echo "audio_file argument is empty, but required. Unable to create a transcription. Please provide the audio_file arg."
+    exit 1
+fi
+
+# Ensure output directory exists
+outputDir=$(dirname "$outputFileArg")
+mkdir -p "$outputDir"
+
+# Debugging statements
+echo "Using API Key: $OPENAI_API_KEY"
+echo "Audio File: $audioFileArg"
+echo "Model: $modelArg"
+echo "Response Format: $responseFormatArg"
+echo "Output File: $outputFileArg.$responseFormatArg"
+
+# Perform the API request
+response=$(curl -s -w "%{http_code}" -o "$outputFileArg.$responseFormatArg" https://api.openai.com/v1/audio/transcriptions \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -F file=@"$audioFileArg" \
+  -F model="$modelArg" \
+  -F response_format="$responseFormatArg")
+
+# Extract the HTTP status code
+statusCode=$(echo "$response" | tail -n1)
+
+if [ "$statusCode" -ne 200 ]; then
+    echo "Error: Received HTTP status code $statusCode from OpenAI API"
+    # Display the error response
+    cat "$outputFileArg.$responseFormatArg"
+    exit 1
+fi
+
+echo "Transcription created successfully and saved to $outputFileArg.$responseFormatArg"
