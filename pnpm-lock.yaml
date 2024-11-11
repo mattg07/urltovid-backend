@@ -35,6 +35,9 @@ importers:
       path:
         specifier: ^0.12.7
         version: 0.12.7
+      srt-convert-json:
+        specifier: ^1.0.3
+        version: 1.0.3
       uniqid:
         specifier: ^5.4.0
         version: 5.4.0
@@ -521,6 +524,9 @@ packages:
   simple-update-notifier@2.0.0:
     resolution: {integrity: sha512-a2B9Y0KlNXl9u/vsW6sTIu9vGEpfKu2wRV6l1H3XEas/0gUIzGzBoP/IouTcUQbm9JWZLH3COxyn03TYlFax6w==}
     engines: {node: '>=10'}
+
+  srt-convert-json@1.0.3:
+    resolution: {integrity: sha512-NbPl7ZdmS9myqGVyrTrYiRvogB/iqpk2AxhkCLC6ND0nwR0t7aKMgULKbpY5UhofRVKTbF1yWGo3HxaSH+eGiA==}
 
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
@@ -1108,6 +1114,8 @@ snapshots:
   simple-update-notifier@2.0.0:
     dependencies:
       semver: 7.6.3
+
+  srt-convert-json@1.0.3: {}
 
   statuses@2.0.1: {}
 

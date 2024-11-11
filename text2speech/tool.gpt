@@ -34,7 +34,6 @@ if [ -z "$textArg" ]; then
 fi
 
 # Debugging statements
-echo "Using API Key: $OPENAI_API_KEY"
 echo "Text: $textArg"
 echo "Model: $modelArg"
 echo "Voice: $voiceArg"

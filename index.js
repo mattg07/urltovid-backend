@@ -7,22 +7,23 @@ import * as dotenv from "dotenv";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import path from "path";
-
 dotenv.config();
 
 const g = new GPTScript();
 
 const app = express();
 app.use(cors());
-
+app.use(express.static('stories'));
 ffmpeg.setFfmpegPath(ffmpegPath);
+
+ffmpeg.setFfprobePath("C:/ffmpeg/bin/ffprobe");
 
 app.get("/test", (req, res) => {
   return res.json("test ok");
 });
 
 app.get("/create-story", async (req, res) => {
-  const url = req.query.url;
+  const url = decodeURIComponent(req.query.url);
   const dir = uniqid();
   const path = "./stories/" + dir;
   fs.mkdirSync(path, { recursive: true });
@@ -50,24 +51,34 @@ app.get("/create-story", async (req, res) => {
 });
 
 app.get("/build-video", async (req, res) => {
-  const id = "50ck4ducm35y432x"; // Use hardcoded id for testing
-  const dir = path.join("./stories/", id); // Correctly construct directory path
+  const id = "50ck4bnsm39697u3";
+  // const id = req.query.id;
+  // if (!id) {
+  //   res.json('error. missing id');
+  //   return; // Add this return statement to stop execution if id is missing
+  // }
+  const dir = path.join("./stories/", id);
 
   console.log("Directory for assets:", dir);
 
-  // Verify if the directory exists
   if (!fs.existsSync(dir)) {
     return res.status(404).json({ message: "Story directory not found" });
   }
 
-  const images = ["b-roll-1.png", "b-roll-2.png", "b-roll-3.png"];
-  const audio = ["voiceover-1.mp3", "voiceover-2.mp3", "voiceover-3.mp3"];
-  const sub = ["voiceover-1.srt", "voiceover-2.srt", "voiceover-3.srt"];
+  const images = ["b-roll-0.png", "b-roll-1.png", "b-roll-2.png"];
+  const audio = ["voiceover-0.mp3", "voiceover-1.mp3", "voiceover-2.mp3"];
+  const transcriptions = [
+    "voiceover-0.txt.verbose_json",
+    "voiceover-1.txt.verbose_json",
+    "voiceover-2.txt.verbose_json",
+  ];
   console.log(dir);
   for (let i = 0; i < images.length; i++) {
     const inputImage = path.join(dir, images[i]);
     const inputAudio = path.join(dir, audio[i]);
-    const inputSub = path.join(dir, sub[i]).replace(/\\/g, "/");
+    const inputTranscription = path.join(dir, transcriptions[i]);
+
+    // const inputSub = path.join(dir, sub[i]).replace(/\\/g, "/");
     const outputVideo = path.join(dir, `output_${i}.mp4`);
 
     console.log("Input Image:", inputImage);
@@ -82,23 +93,56 @@ app.get("/build-video", async (req, res) => {
       console.error(`Audio file not found: ${inputAudio}`);
       continue;
     }
-    if (!fs.existsSync(inputSub)) {
-      console.error(`Sub file not found: ${inputSub}`);
+
+    if (!fs.existsSync(inputTranscription)) {
+      console.error(`Transcription file not found: ${inputTranscription}`);
       continue;
     }
+
+    // if (!fs.existsSync(inputSub)) {
+    //   console.error(`Sub file not found: ${inputSub}`);
+    //   continue;
+    // }
+
+    let transcription;
+    try {
+      transcription = JSON.parse(fs.readFileSync(inputTranscription, "utf8"));
+    } catch (err) {
+      console.error(
+        `Error reading transcription file: ${inputTranscription}`,
+        err
+      );
+      continue;
+    }
+
+    const words = transcription.words;
+    const duration = parseFloat(transcription.duration).toFixed(2);
+
+    // Build the drawtext filter string
+    let drawtextFilter = "";
+    words.forEach((wordInfo) => {
+      const word = wordInfo.word.replace(/'/g, "\\'").replace(/"/g, '\\"');
+      const start = parseFloat(wordInfo.start).toFixed(2);
+      const end = parseFloat(wordInfo.end).toFixed(2);
+      drawtextFilter += `drawtext=text='${word}':fontcolor=white:fontsize=96:borderw=4:bordercolor=black:x=(w-text_w)/2:y=(h*3/4)-text_h:enable='between(t\\,${start}\\,${end})',`;
+    });
+    // remove last comma
+    drawtextFilter = drawtextFilter.slice(0, -1);
 
     await new Promise((resolve, reject) => {
       ffmpeg()
         .input(inputImage)
+        .loop(duration)
+        .videoFilter(drawtextFilter)
         .input(inputAudio)
-        .input(inputSub)  // Input subtitle file (e.g., .srt or .ass)
-        .videoCodec("libx264") // Set video codec
         .audioCodec("copy") // Copy the audio without re-encoding
-        .outputOptions([`-vf subtitles=${inputSub}`,
-          "-preset veryfast",
-          "-strict experimental",
-          "-pix_fmt yuv420p"
-        ])
+        .outputOptions(["-preset veryfast", "-pix_fmt yuv420p"])
+        .on("stderr", (stderr) => {
+          console.error("FFmpeg STDERR:", stderr); // Logs FFmpeg's standard error output
+        })
+        .on("stdout", (stdout) => {
+          console.log("FFmpeg STDOUT:", stdout); // Logs FFmpeg's standard output
+        })
         .on("end", resolve)
         .on("error", (err, stdout, stderr) => {
           console.error("Error: " + err.message);
@@ -108,9 +152,46 @@ app.get("/build-video", async (req, res) => {
         })
         .save(outputVideo);
     });
-    console.log("ready processing");
+    console.log("ready processing segments");
   }
 
-  return res.json({ message: "Video segments created successfully" });
+  console.log('Merging 3 videos together');
+  const listFileName = path.join(dir, 'list.txt');
+
+// File list and output settings
+const fileList = ['output_0.mp4', 'output_1.mp4', 'output_2.mp4'];
+
+// Function to merge videos
+  await new Promise((resolve, reject) => {
+    let fileNames = '';
+
+    // Generate the list file content
+    fileList.forEach((fileName) => {
+      fileNames += `file '${fileName}'\n`;
+    });
+
+    // Write the list file asynchronously
+    fs.writeFileSync(listFileName, fileNames, 'utf8');
+
+    // Use ffmpeg to merge the videos
+    ffmpeg()
+      .input(listFileName)
+      .inputOptions(['-f concat', '-safe 0'])
+      .outputOptions('-c copy')
+      .save(`${dir}/finalVideo.mp4`)
+      .on('end', () => {
+        console.log('Concatenation succeeded!');
+        resolve(); // Resolve when concatenation finishes successfully
+      })
+      .on("error", (err, stdout, stderr) => {
+          console.error("Error: " + err.message);
+          console.error("ffmpeg stdout: " + stdout);
+          console.error("ffmpeg stderr: " + stderr);
+          reject(err);
+        })
+  });
+  return res.json(`${id}/finalVideo.mp4`)
+
 });
+
 app.listen(8080, () => console.log("Listening on port 8080"));

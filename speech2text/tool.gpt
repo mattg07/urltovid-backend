@@ -16,7 +16,7 @@ fi
 
 audioFileArg=${AUDIO_FILE:-""}
 modelArg=${MODEL:-"whisper-1"}
-responseFormatArg=${RESPONSE_FORMAT:-"srt"}
+responseFormatArg=${RESPONSE_FORMAT:-"verbose_json"}
 outputFileArg=${OUTPUT_FILE:-"transcription"}
 
 if [ -z "$OPENAI_API_KEY" ]; then
@@ -45,6 +45,7 @@ response=$(curl -s -w "%{http_code}" -o "$outputFileArg.$responseFormatArg" http
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -F file=@"$audioFileArg" \
   -F model="$modelArg" \
+  -F "timestamp_granularities[]=word"\
   -F response_format="$responseFormatArg")
 
 # Extract the HTTP status code
