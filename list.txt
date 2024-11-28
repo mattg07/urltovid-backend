@@ -1,3 +1,0 @@
-file 'output_0.mp4'
-file 'output_1.mp4'
-file 'output_2.mp4'
