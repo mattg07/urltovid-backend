@@ -1,6 +1,6 @@
 tools: sys.write, sys.read, sys.download, sys.find
 tools: github.com/gptscript-ai/browser
-tools: ./dalle-image-generation/tool.gpt
+tools: https://github.com/mattg07/dalle-image-generation
 tools: ./text2speech/tool.gpt
 tools: ./speech2text/tool.gpt
 args: url: Link to the article or blog page
