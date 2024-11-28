@@ -10,6 +10,6 @@ globalmodel: gpt-4o-mini
 2. Browse to ${url} and read the page contents.
 3. Create a tldr text version of it for an Instagram reel or a TikTok video. No emojis. Max 300 words.
 4. Split the created text into 3 parts, save the texts to "${dir}/story-${INDEX}.txt"
-5. For each text part, come up with a keyword or a phrase for a 1024x1792 b-roll image, better if the images are animation. generate and then save them to: "${dir}/b-roll-${INDEX}.png"
-6. For each text part, generate speech files and save them to: "${dir}/voiceover-${INDEX}". Don't pass the file type, use the default value.
+5. For each text part, come up with a keyword or a phrase for a 1024x1792 b-roll image, better if the images are animation. generate and then download them to: "${dir}/b-roll-${INDEX}.png"
+6. For each text part, generate speech files and save them to: "${dir}/voiceover-${INDEX}.mp3".
 7. Run speech2text for all 3 *.mp3 files inside "${dir}" and save results to 3 separate files in ${dir}.

@@ -19,6 +19,7 @@ modelArg=${MODEL:-"whisper-1"}
 responseFormatArg=${RESPONSE_FORMAT:-"verbose_json"}
 outputFileArg=${OUTPUT_FILE:-"transcription"}
 
+
 if [ -z "$OPENAI_API_KEY" ]; then
     echo "OPENAI_API_KEY is not set. Unable to create a transcription. Please set the OPENAI_API_KEY as an environment variable."
     exit 1
@@ -29,7 +30,6 @@ if [ -z "$audioFileArg" ]; then
     exit 1
 fi
 
-# Ensure output directory exists
 outputDir=$(dirname "$outputFileArg")
 mkdir -p "$outputDir"
 
@@ -40,7 +40,6 @@ echo "Model: $modelArg"
 echo "Response Format: $responseFormatArg"
 echo "Output File: $outputFileArg.$responseFormatArg"
 
-# Perform the API request
 response=$(curl -s -w "%{http_code}" -o "$outputFileArg.$responseFormatArg" https://api.openai.com/v1/audio/transcriptions \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -F file=@"$audioFileArg" \

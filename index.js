@@ -43,7 +43,7 @@ app.get("/create-story", async (req, res) => {
       }
     });
     const result = await run.text();
-    return res.json(result);
+    return res.json(dir);
   } catch (e) {
     console.error(e);
     return res.json("error");
@@ -51,12 +51,12 @@ app.get("/create-story", async (req, res) => {
 });
 
 app.get("/build-video", async (req, res) => {
-  const id = "50ck4bnsm39697u3";
-  // const id = req.query.id;
-  // if (!id) {
-  //   res.json('error. missing id');
-  //   return; // Add this return statement to stop execution if id is missing
-  // }
+  // const id = "50ck4bnsm39697u3";
+  const id = req.query.id;
+  if (!id) {
+    res.json('error. missing id');
+    return;
+  }
   const dir = path.join("./stories/", id);
 
   console.log("Directory for assets:", dir);
@@ -78,6 +78,8 @@ app.get("/build-video", async (req, res) => {
     const inputAudio = path.join(dir, audio[i]);
     const inputTranscription = path.join(dir, transcriptions[i]);
 
+
+    //GPTSCRIPT is switching the // to keeps bugging. 
     // const inputSub = path.join(dir, sub[i]).replace(/\\/g, "/");
     const outputVideo = path.join(dir, `output_${i}.mp4`);
 
@@ -99,10 +101,6 @@ app.get("/build-video", async (req, res) => {
       continue;
     }
 
-    // if (!fs.existsSync(inputSub)) {
-    //   console.error(`Sub file not found: ${inputSub}`);
-    //   continue;
-    // }
 
     let transcription;
     try {
@@ -118,7 +116,7 @@ app.get("/build-video", async (req, res) => {
     const words = transcription.words;
     const duration = parseFloat(transcription.duration).toFixed(2);
 
-    // Build the drawtext filter string
+    // Build the drawtext filter string. its kind of glitchy
     let drawtextFilter = "";
     words.forEach((wordInfo) => {
       const word = wordInfo.word.replace(/'/g, "\\'").replace(/"/g, '\\"');
@@ -135,13 +133,13 @@ app.get("/build-video", async (req, res) => {
         .loop(duration)
         .videoFilter(drawtextFilter)
         .input(inputAudio)
-        .audioCodec("copy") // Copy the audio without re-encoding
+        .audioCodec("copy") 
         .outputOptions(["-preset veryfast", "-pix_fmt yuv420p"])
         .on("stderr", (stderr) => {
-          console.error("FFmpeg STDERR:", stderr); // Logs FFmpeg's standard error output
+          console.error("FFmpeg STDERR:", stderr); 
         })
         .on("stdout", (stdout) => {
-          console.log("FFmpeg STDOUT:", stdout); // Logs FFmpeg's standard output
+          console.log("FFmpeg STDOUT:", stdout); 
         })
         .on("end", resolve)
         .on("error", (err, stdout, stderr) => {
@@ -156,32 +154,19 @@ app.get("/build-video", async (req, res) => {
   }
 
   console.log('Merging 3 videos together');
-  const listFileName = path.join(dir, 'list.txt');
-
-// File list and output settings
-const fileList = ['output_0.mp4', 'output_1.mp4', 'output_2.mp4'];
-
-// Function to merge videos
   await new Promise((resolve, reject) => {
-    let fileNames = '';
 
-    // Generate the list file content
-    fileList.forEach((fileName) => {
-      fileNames += `file '${fileName}'\n`;
-    });
 
-    // Write the list file asynchronously
-    fs.writeFileSync(listFileName, fileNames, 'utf8');
-
-    // Use ffmpeg to merge the videos
     ffmpeg()
-      .input(listFileName)
+      .input(path.join(dir, 'output_0.mp4'))
+      .input(path.join(dir, 'output_1.mp4'))
+      .input(path.join(dir, 'output_2.mp4'))
       .inputOptions(['-f concat', '-safe 0'])
       .outputOptions('-c copy')
       .save(`${dir}/finalVideo.mp4`)
       .on('end', () => {
         console.log('Concatenation succeeded!');
-        resolve(); // Resolve when concatenation finishes successfully
+        resolve(); 
       })
       .on("error", (err, stdout, stderr) => {
           console.error("Error: " + err.message);
