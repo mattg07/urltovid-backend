@@ -1,4 +1,12 @@
 {
+	"name": "url to vid backend",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+	  "start": "node index.js",
+	  "dev": "nodemon index.js"
+	},
+	
 	"type": "module",
 	"dependencies": {
 		"@gptscript-ai/gptscript": "0.9.5-rc5",
