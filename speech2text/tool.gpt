@@ -34,7 +34,8 @@ outputDir=$(dirname "$outputFileArg")
 mkdir -p "$outputDir"
 
 # Debugging statements
-echo "Using API Key: $OPENAI_API_KEY"
+
+
 echo "Audio File: $audioFileArg"
 echo "Model: $modelArg"
 echo "Response Format: $responseFormatArg"
